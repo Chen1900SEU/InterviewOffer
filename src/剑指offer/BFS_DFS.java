@@ -6,8 +6,258 @@ import java.util.*;
 https://blog.csdn.net/my_jobs/article/details/43451187
 https://www.cnblogs.com/developerY/p/3323264.html
  */
+class Vertex {
+    String verName;
+    String color;
+    int discoverTime;
+    int finishTime;
+    Vertex nextnode;
+}
+
+class Graph {
+    Vertex[] vertexArray = new Vertex[100];
+    int verNum = 0;
+    int edgeNum = 0;
+}
 
 public class BFS_DFS {
+    int time = 0;
+    Stack<Vertex> stackVertex = new Stack<>();
+
+    /**
+     * 依据用户的输入的string 类型的顶点返回该顶点。
+     *
+     * @param graph
+     * @param str
+     * @return 返回一个顶点
+     */
+    public Vertex getVertex(Graph graph, String str) {
+        for (int i = 0; i < graph.verNum; i++) {
+            if (graph.vertexArray[i].verName.equals(str)) {
+                return graph.vertexArray[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 依据用户的输入数据初始化一个图，以邻接表的形式构建。
+     *
+     * @param graph
+     */
+    public void initialGraph(Graph graph) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("请输入顶点数和边数：");
+        graph.verNum = scan.nextInt();
+        graph.edgeNum = scan.nextInt();
+
+        System.out.println("请依次输入定点名称：");
+        for (int i = 0; i < graph.verNum; i++) {
+            Vertex vertex = new Vertex();
+            String name = scan.next();
+            vertex.verName = name;
+            vertex.color = "white";
+            vertex.discoverTime = 0;
+            vertex.finishTime = 0;
+            vertex.nextnode = null;
+            graph.vertexArray[i] = vertex;
+        }
+        System.out.println("请依次输入图的便边：");
+        for (int i = 0; i < graph.edgeNum; i++) {
+            String preV = scan.next();
+            String folV = scan.next();
+
+            Vertex v1 = getVertex(graph, preV);
+            if (v1 == null)
+                System.out.println("输入边存在图中没有的顶点！");
+            Vertex v2 = new Vertex();
+            v2.verName = folV;
+            v2.nextnode = v1.nextnode;
+            v1.nextnode = v2;
+
+//          紧接着下面注释的代码加上便是构建无向图的，不加则是构建有向图的！
+//          Vertex1 reV2=getVertex(graph,folV);
+//          if(reV2==null)
+//              System.out.println("输入边存在图中没有的顶点！");
+//          Vertex1 reV1=new Vertex1();
+//          reV1.verName=preV;
+//          reV1.nextNode=reV2.nextNode;
+//          reV2.nextNode=reV1;
+        }
+    }
+
+    /**
+     * 输入图的邻接表
+     *
+     * @param graph 待输出的图
+     */
+    public void outputGraph(Graph graph) {
+        System.out.println("输出图的邻接链表为：");
+        for (int i = 0; i < graph.verNum; i++) {
+            Vertex vertex = graph.vertexArray[i];
+            System.out.print(vertex.verName);
+
+            Vertex current = vertex.nextnode;
+            while (current != null) {
+                System.out.print("-->" + current.verName);
+                current = current.nextnode;
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * DFS遍历辅助函数，标记颜色是辅助，即根据顶点返回其下标
+     *
+     * @param vertex 顶点
+     * @param graph  图
+     * @return返回下标
+     */
+    public int index(Vertex vertex, Graph graph) {
+        for (int i = 0; i < graph.verNum; i++) {
+            if (vertex.verName.equals(graph.vertexArray[i].verName))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * DFS深度优先遍历初始化
+     *
+     * @param graph 图
+     */
+    public void DFS(Graph graph) {
+        for (int i = 0; i < graph.verNum; i++) {
+            if (graph.vertexArray[i].color.equals("white")) {
+                DfsVisit(graph.vertexArray[i], graph);
+                System.out.println();
+            }
+        }
+    }
+
+    /**
+     * DFS递归函数
+     *
+     * @param vertex 顶点
+     * @param graph  图
+     */
+    public void DfsVisit(Vertex vertex, Graph graph) {
+        vertex.color = "gray";
+        time = time + 1;
+        vertex.discoverTime = time;
+        System.out.print(vertex.verName + "-->");
+
+        Vertex current = vertex.nextnode;
+        while (current != null) {
+            Vertex currentNow = getVertex(graph, current.verName);
+            if (currentNow.color.equals("white"))
+                DfsVisit(currentNow, graph);
+            current = current.nextnode;
+        }
+        vertex.color = "black";
+        time = time + 1;
+        vertex.finishTime = time;
+    }
+
+    /**
+     * 寻找一个节点的邻接点中是否还有白色节点
+     *
+     * @param vertex 顶点
+     * @param graph  图
+     * @return 返回白色节点或是null
+     */
+    public Vertex getAdj(Graph graph, Vertex vertex) {
+        Vertex ver = getVertex(graph, vertex.verName);
+        Vertex current = ver.nextnode;
+        if (current == null)
+            return null;
+        else {
+            Vertex cur = getVertex(graph, current.verName);
+            while (current != null && cur.color.equals("gray")) {
+                current = current.nextnode;
+            }
+            if (cur.color.equals("white")) {
+                Vertex currentNow = getVertex(graph, current.verName);
+                return currentNow;
+            } else {
+                return null;
+            }
+        }
+
+    }
+
+    /**
+     * 通过栈实现dfs遍历
+     *
+     * @param graph  图
+     * @param vertex 顶点
+     */
+    public void stackOperator(Graph graph, Vertex vertex) {
+        vertex.color = "gray";
+        stackVertex.push(vertex);
+        System.out.print(vertex.verName + "-->");
+
+        while (!stackVertex.isEmpty()) {
+            Vertex ver = stackVertex.peek();
+            Vertex current = getAdj(graph, ver);
+            if (current != null) {
+                stackVertex.push(current);
+                current.color = "gray";
+                System.out.print(current.verName + "-->");
+            } else {
+                stackVertex.pop();
+            }
+        }
+    }
+
+    /**
+     * DFS遍历主函数
+     *
+     * @param graph
+     */
+    public void stackMain(Graph graph) {
+        for (int i = 0; i < graph.verNum; i++) {
+            if (graph.vertexArray[i].color.equals("white")) {
+                stackOperator(graph, graph.vertexArray[i]);
+                System.out.println();
+            }
+        }
+    }
+
+    /**
+     * BFS广度优先搜索实现
+     *
+     * @param graph 图
+     */
+    public void BFS(Graph graph) {
+        Vertex current = graph.vertexArray[0];
+        current.color = "gray";
+        time = time + 1;
+        current.discoverTime = time;
+
+        Queue<Vertex> queue = new LinkedList<Vertex>();
+        queue.offer(current);
+        while (queue.peek() != null) {
+            Vertex ver = queue.poll();
+            time = time + 1;
+            ver.finishTime = time;
+            System.out.print(ver.verName + "-->");
+
+            Vertex cur = ver.nextnode;
+            while (cur != null) {
+                Vertex curNow = getVertex(graph, cur.verName);
+                if (curNow.color.equals("white")) {
+                    curNow.color = "gray";
+                    time = time + 1;
+                    curNow.discoverTime = time;
+                    queue.offer(curNow);
+                }
+                cur = cur.nextnode;
+            }
+        }
+        System.out.println("null");
+    }
+
     /**
      * Breadth First Search
      * 广度优先遍历树，需要用到队列（Queue）来存储节点对象,队列的特点就是先进先出。先往队列中插入左节点，再插右节点，这样出队就是先左节点后右节点了。
@@ -69,6 +319,7 @@ public class BFS_DFS {
      * 邻接链表都会被遍历，因此BFS的时间复杂度是Θ（V+E），其中V是顶点个数，E是边数，也就是所有邻接表中的元素个数。为了更好的说明
      * 这个过程，下图列出了对一个图的BFS的过程
      */
+    /*
     public static void bfs(HashMap<Character, LinkedList<Character>> graph, HashMap<Character, Integer> dist, char start) {//Character 类用于对单个字符进行操作。
 
         Queue<Character> q = new LinkedList<>();
@@ -89,7 +340,7 @@ public class BFS_DFS {
             }
         }
     }
-
+*/
     public static void main(String args[]) {
         BFS_DFS bb = new BFS_DFS();
         // s顶点的邻接表
@@ -132,7 +383,7 @@ public class BFS_DFS {
         graph.put('u', list_u);
         HashMap<Character, Integer> dist = new HashMap<Character, Integer>();
         char start = 's';
-        bb.bfs(graph, dist, start);
+        //bb.bfs(graph, dist, start);
         // bb.dfs(graph, dist, start);
 
     }
