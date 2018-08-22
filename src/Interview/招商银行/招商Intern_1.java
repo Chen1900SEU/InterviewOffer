@@ -1,4 +1,4 @@
-package CompanyRecruitCode.招商银行;
+package Interview.招商银行;
 
 import java.util.Scanner;
 
